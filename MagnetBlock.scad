@@ -22,7 +22,7 @@
     https://creativecommons.org/licenses/by-nc-sa/4.0/
  */
 
-Layout = "d"; // [d: Assembly diagram, b: Block oriented for printing, s: Shell oriented for printing, a:Artwork template for export as SVG]
+Layout = "d"; // [d: Assembly diagram, b: Block only, s: Shell only, a:Artwork template]
 // (mm) leeway allowed for imprecise printing, depending on your printer and material used.
 tolerance = .16; // .01
 
@@ -43,8 +43,8 @@ back_thickness = 0.5;
 front_thickness = 0.6;
 block_side_thickness = 4.0; // 0.1
 
-/* [Magnet size] */
-how_many_round_magnets = 3; // [3,4,0:none,1:none but add tape platforms]
+/* [Magnet settings] */
+magnet_option = 3; // [3:3 round magnets,4:4 round magnets,0:none,1:platforms for magnet tape]
 // Need not be a tight fit.
 magnet_diameter = 5.6; // .1
 // Let magnet protrude a little for better contact in case back not perfectly flat.
@@ -62,7 +62,7 @@ fb = back_thickness;
 bs = block_side_thickness;
 fsi = 1.0;
 fe = bs + pt + 2*Tol + fsi + fs;
-hmm = how_many_round_magnets;
+hmm = magnet_option;
 mw = magnet_diameter;
 md = magnet_depth;
 magnet_offset = bs + 3 + (hmm == 1 ? 0 : mw/2); // distance of center of magnet post from edge of block
@@ -362,7 +362,7 @@ module assemblyDiagram() {
     % rotate([90, 0, 0]) translate([0,-7,0]) linear_extrude(.01) text("Pieces are removed to display cross-sections.", size=4);
 }
 
-/* Lay out all parts in printing orientation. Currently this code is unreachable. */
+/* Lay out all parts in printing orientation. Normally you won't want to do this because they are generally in different materials. */
 module printLayout() {
     shell();
    translate([dShell.x + 8, 0, 0])
@@ -375,7 +375,8 @@ module debug() {
 
 module main() {
     if (Layout == "d")
-        assemblyDiagram();
+        if ($preview) assemblyDiagram();
+		else printLayout();
     else if (Layout == "a")
         art_template();
     else if (Layout == "x") // not currently selectable.
