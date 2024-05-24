@@ -4,12 +4,9 @@ The following types of picture frames and frame accessories are implemented here
 
 This project is implemented in the open-source [OpenSCAD](https://openscad.org) CAD modeling scripting language. To make use of these scripts install the free OpenSCAD client on your PC, fire it up, and open a .SCAD file.
 
-## General notes
-All distance measurements are in mm. Any angular measurements are in degrees.
-These models were designed for easy printing and will generally work fine exactly as exported.
-
-## Magnet Block ( MagnetBlock.scad )
-3D-printed holder for mounting small artwork on a refrigerator magnet, wrap-around style so the picture continues onto the edges behind a transparent "shell".
+| Picture | Main Filename | Name / Instructions link | Remarks |
+| - | - | - | - |
+| | Magnet Block ( MagnetBlock.scad ) | | 3D-printed holder for mounting small artwork on a refrigerator magnet, wrap-around style so the picture continues onto the edges behind a transparent "shell". |
 
 ![Image](https://github.com/users/MethylBromide/projects/3/assets/12117008/b99dea3b-ed57-428b-be1d-10024fd480e6) ![Image](https://github.com/users/MethylBromide/projects/3/assets/12117008/acc35cd8-3320-4f1d-bf78-60d525609213)
 
