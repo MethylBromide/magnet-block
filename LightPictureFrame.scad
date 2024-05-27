@@ -11,7 +11,7 @@
  */
 
 // Show the various parts:
-Layout = "s"; // [s:Assembly diagram, f:Front only, b: back only, d:debug]
+Layout = "s"; // [s:Assembly diagram, f:Frame only, b:Block only]
 /* [Frame dimensions (in mm)] */
 // Total depth of frame (minimum -- will be deeper if needed to fit contents).
 Frame_depth = 5;
@@ -21,11 +21,12 @@ frame_width = 10; // .5
 frame_overlap = 1; // 0.1
 // How far artwork is recessed from front of frame
 frame_inset = 2; // 0.1
-
 // Size of hole behind frame opening (size of artwork unless there's a mat or recess)
 content_dimensions = [76.7, 102.1];
-// How much depth to add to fit your artwork -- usually the thickness of your paper and any mat or clear cover.
+// Space between the lip of the frame and the backing piece -- to fit artwork, mat, glass,...
 add_depth = .28; // 0.01
+// A zig-zag shape along the frame's top edge to hang it from a nail or pin.
+Add_sawtooth_hanger = true;
 
 /* [Recessed artwork] */
 //Should the back piece contain a recess for the artwork?
@@ -38,14 +39,13 @@ Recess_size = [40,60]; // 0.1
 Recess_svg_filename = "";
 
 /* [Magnet posts] */
-posts_for_magnets = 3; // [4: 4 round holes, 3:3 round holes, 0:no magnets, 2:allow space for 13mm magnet tape]
+posts_for_magnets = 3; // [4: 4 round magnets, 3:3 round magnets, 0:no magnets, 2:platforms for magnet tape]
 // The magnet hole should be a little wider than the magnet.
 round_magnet_hole_size = [5.5, 1]; // .1
 
 /* [Advanced] */
 wall_thickness = 0.7; //0.1
 wedge_height = 0.6;
-Add_hangy_bits = true;
 // How much larger the hole in the frame is than the block it contains.
 tolerance = 0.11; //0.01
 
@@ -187,7 +187,7 @@ module frame() {
 	coff = coff2-wt; // from frame edge to outside of inner wall
 	grooveZ = fi+tol;
 
-	color("yellow", .4)
+	color("yellow")
 	union() {
 		difference() {
 			union() {
@@ -250,7 +250,7 @@ module frame() {
 					magnet_post();
 			}
 		}
-		if (Add_hangy_bits) {
+		if (Add_sawtooth_hanger) {
 			translate([dFrame.x-wt, hdFrame.y, 0])
 				rotate([0,0,180])
 				hangy_bit();
