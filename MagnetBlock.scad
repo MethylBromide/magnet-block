@@ -41,7 +41,9 @@ back_thickness = 0.5;
 
 /* [Block dimensions] */
 front_thickness = 0.6;
+// the side thickness is the space between the edge and the inner hollow. The wall thickness allows for material savings by making the outer edge of the block hollow.
 block_side_thickness = 4.0; // 0.1
+block_WALL_thickness = 0.7; // 0.05
 
 /* [Magnet settings] */
 magnet_option = 3; // [3:3 round magnets,4:4 round magnets,0:none,1:platforms for magnet tape]
@@ -60,6 +62,7 @@ fs = side_thickness;
 pt = paper_thickness;
 fb = back_thickness;
 bs = block_side_thickness;
+bw = block_WALL_thickness;
 fsi = 1.0;
 fe = bs + pt + 2*Tol + fsi + fs;
 hmm = magnet_option;
@@ -68,6 +71,7 @@ md = magnet_depth;
 magnet_offset = bs + 3 + (hmm == 1 ? 0 : mw/2); // distance of center of magnet post from edge of block
 dPic = [min(picture_size), max(picture_size)]; // orient small dimension along X axis because the magnet positioning code assumes this is the case.
 dBlock = [dPic.x, dPic.y, fw-pt ];
+hdBlock = dBlock/2; // for centering adjustments
 dShell = dBlock + [(fs+pt)*2+Tol, (fs+pt)*2+Tol, Tol+2*pt+fb];
 bfw = bs-.5; // width of diagonal-cut flap on artwork
 wedge_ht = .5;
@@ -245,12 +249,25 @@ module shell() {
 module block() {
     // basic shape of block is hollow box.
     color("#ffdddd")
-    translate(dBlock/2)
+    translate(hdBlock)
     union() {
         difference() {
             cube(dBlock, center=true);
             translate([0,0,ft])
             cube(dBlock-[bs*2,bs*2,0], center=true);
+			channelWidth = bs-2*bw;
+			echo("channelWidth", channelWidth);
+			if (bw >= 0.5 && channelWidth >= 1.5) {
+				// don't hollow out the block edge unless the channel is wide enough that we're actually saving material, considering there would generally be infill anyway.
+				translate([hdBlock.x-bw-channelWidth, bw-hdBlock.y, ft-hdBlock.z])
+				 cube([channelWidth, dBlock.y-2*bw, dBlock.z]);
+				translate([bw, bw, ft]-hdBlock)
+				 cube([channelWidth, dBlock.y-2*bw, dBlock.z]);
+				translate([bw, bw, ft]-hdBlock)
+				 cube([dBlock.x-2*bw, channelWidth, dBlock.z]);
+				translate([bw-hdBlock.x,hdBlock.y-bw-channelWidth, ft-hdBlock.z])
+				 cube([dBlock.x-2*bw, channelWidth, dBlock.z]);
+			}
         }
         
         if (hmm == 1) {
@@ -264,7 +281,7 @@ module block() {
             off = [dBlock.x/2-magnet_offset,dBlock.y/2-magnet_offset,ft-dBlock.z/2+magnet_post_ht];
             // 3 or 4 posts
             locs = hmm == 3
-                ? [[-1,-1],[1,-1],[0,1]]
+                ? [[-1,-1],[-1,1],[1,0]]
                 : [[-1,-1],[-1,1],[1,-1],[1,1]];
             for(p = locs) {
                 translate([off.x*p.x,off.y*p.y,off.z])
