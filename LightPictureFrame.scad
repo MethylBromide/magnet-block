@@ -1,5 +1,5 @@
 /*
- Light Picture Frame, version 0.0
+ Light Picture Frame, version 0.1
  Copyright 2024 Tyler Tork
  
  This frame is parameterized using the Customizer to let you specify the dimensions of the artwork and the amount of frame you would like around the picture.
@@ -11,7 +11,7 @@
  */
 
 // Show the various parts:
-Layout = "s"; // [s:Assembly diagram, f:Frame only, b:Block only]
+Layout = "s"; // [s:Assembly diagram, f:Frame only, b:Block only,d:debug]
 /* [Frame dimensions (in mm)] */
 // Total depth of frame (minimum -- will be deeper if needed to fit contents).
 Frame_depth = 5;
@@ -27,6 +27,7 @@ content_dimensions = [76.7, 102.1];
 add_depth = .28; // 0.01
 // A zig-zag shape along the frame's top edge to hang it from a nail or pin.
 Add_sawtooth_hanger = true;
+Hanger_tooth_spacing = 1.5;
 
 /* [Recessed artwork] */
 //Should the back piece contain a recess for the artwork?
@@ -36,6 +37,7 @@ Recess_depth = .29; // 0.01
 Recess_ledge = 1000; // 0.01
 
 Recess_size = [40,60]; // 0.1
+// The SVG file for your custom shape should contain one path and the page cropped to the path.
 Recess_svg_filename = "";
 
 /* [Magnet posts] */
@@ -142,14 +144,15 @@ module textlines(texts, size=4, halign="center", font="", lineheight=1.4) {
 }
 
 module hangy_bit() {
-	points = [[-.001,-1.5,dFrame.z],
-			  [2,0,dFrame.z],
-			  [-.001,1.5,dFrame.z],
-			  [-.001,0,dFrame.z-3]];
+	ts = min(2.2,Hanger_tooth_spacing);
+	points = [[-.001,-1.5*ts,dFrame.z],
+			  [ts*1.2,0,dFrame.z],
+			  [-.001,1.5*ts,dFrame.z],
+			  [-.001,0,dFrame.z-2*ts]];
 	faces = [ [0,1,2],[2,3,1],[0,1,3],[0,2,3]];
 	union() {
 		for (i = [-2:1:2]) {
-			translate([0,i*1.2,0])
+			translate([0,i*ts,0])
 				polyhedron(points, faces, 1);
 		}
 	}
@@ -185,7 +188,7 @@ module wedge_section() {
 module frame() {
 	coff2 = fw-fo; // distance from frame edge to inside of inner wall
 	coff = coff2-wt; // from frame edge to outside of inner wall
-	grooveZ = fi+tol;
+	grooveZ = fi+tol+ad;
 
 	color("yellow")
 	union() {
@@ -201,7 +204,7 @@ module frame() {
 				difference() {
 					// inner wall
 					translate([coff,coff,0])
-						cube([dFrame.x-2*coff, dFrame.y-2*coff, dBlock.z + fi + tol]);
+						cube([dFrame.x-2*coff, dFrame.y-2*coff, dBlock.z + fi + tol + ad]);
 					// minus hole for block and artwork
 					translate([coff2,coff2,fi])
 						cube(dFrame-[2*coff2, 2*coff2, 0]);
@@ -261,6 +264,7 @@ module frame() {
 	}
 }
 
+// return the 2D shape of the recess outline, centered on the XY origin. */
 module recessOutline() {
 	if (Recess_shape == "o") {
 		scale([1, dRecess.y/dRecess.x, 1]) circle(d=dRecess.x);
@@ -289,7 +293,7 @@ module recess(outer=true) {
 			translate([0, 0, bPunch?-.5:(-1-wt)])
 				linear_extrude(height=dRecess.z+1,convexity=6)
 				recessOutline();
-			if (Recess_ledge > 0 && min(dRecess) > Recess_ledge*2) {
+			if (Recess_ledge > 0 && min(dRecess.x,dRecess.y) > Recess_ledge*2) {
 				linear_extrude(height=dRecess.z+wt+1,convexity=6)
 					offset(r=-Recess_ledge)
 					recessOutline();
@@ -399,7 +403,9 @@ module cutaway() {
 }
 
 module debug() {
-	hangy_bit();
+resize([dRecess.x, dRecess.y, 0])
+import(Recess_svg_filename, convexity=10);
+//	hangy_bit();
 //	tape_platform();
 //	cutaway();
 //	artwork();
